@@ -3,6 +3,8 @@ const {
     UnauthorizedError
 } = require('../utils/errors');
 const db = require('../db');
+const bcrypt = require('bcrypt');
+const {BCRYPT_WORK_FACTOR} = require('../config');
 class User {
     static async login(credentials) {
         // user should submit their email and password
@@ -14,11 +16,18 @@ class User {
             }
         })
         // look up the user in the db by email
+        const user = await User.fetchUserByEmail(credentials.email);
         // if a user is found, compare the submitted password
         // with the password in the db
         // if there is a match, return the user
+        if(user) {
+            const isValid = await bcrypt.compare(credentials.password, user.password);
+            if(isValid) {
+                return user
+            }
+        }
 
-        //if any of this goes wrong, throw an error
+        //if any of this goes wrong, throw an error at the end as no returns where made
         throw new UnauthorizedError("Invalid email/password combo");
     }
 
@@ -45,6 +54,7 @@ class User {
         }
 
         // take the user password, and hash it for security purposes
+        const hashedPassword = await bcrypt.hash(credentials.password, BCRYPT_WORK_FACTOR);
         // take the users email, and lowercase it
         const lowercasedEmail = credentials.email.toLowerCase();
 
@@ -59,7 +69,7 @@ class User {
             )
             VALUES ($1,$2,$3,$4,$5)
             RETURNING id, email, first_name, last_name, location;`,
-            [lowercasedEmail, credentials.password, credentials.first_name, credentials.last_name, credentials.location])
+            [lowercasedEmail, hashedPassword, credentials.first_name, credentials.last_name, credentials.location])
 
         //return user
         const user = result.rows[0];
