@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const { NotFoundError } = require('./utils/errors');
+const { PORT } = require('./config');
 
 //init express
 const app = express()
@@ -30,9 +31,7 @@ app.use((err, req, res, next) => {
     })
 })
 
-//initialize server listen at PORT
-const PORT = process.env.PORT || 3001;
-
+//initialize server. listen at PORT
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port: ${PORT} 🚀`);
+    console.log(`🚀 Server running on http://localhost:${PORT} 🚀`);
 })
