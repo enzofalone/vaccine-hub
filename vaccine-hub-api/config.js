@@ -15,7 +15,7 @@ function getDatabaseUri() {
     return process.env.DATABASE_URL || `postgresql://${dbUser}:${dbPass}@${dbHost}:${dbPort}/${dbName}`
 }
 
-console.log("process.env".yellow, Object.keys(process.env))
+// console.log("process.env".yellow, Object.keys(process.env))
 console.log("App Config".red)
 console.log("PORT:".blue, PORT)
 console.log("Database URI:".blue, getDatabaseUri())

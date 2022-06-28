@@ -3,6 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const { NotFoundError } = require('./utils/errors');
 const { PORT } = require('./config');
+const authRoutes = require('./routes/auth');
 
 //init express
 const app = express()
@@ -15,6 +16,9 @@ app.use(express.json());
 
 //log request info
 app.use(morgan('tiny'));
+
+// set up authentication router
+app.use('/auth', authRoutes);
 
 // generic error handling (404)
 app.use((req, res, next) => {
