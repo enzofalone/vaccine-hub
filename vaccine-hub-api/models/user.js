@@ -6,6 +6,17 @@ const db = require('../db');
 const bcrypt = require('bcrypt');
 const {BCRYPT_WORK_FACTOR} = require('../config');
 class User {
+    static async makePublicUser(user) {
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            location: user.location,
+            date: user.date
+        }
+    }
+
     static async login(credentials) {
         // user should submit their email and password
         // if any fields are missing, throw an error
@@ -23,7 +34,7 @@ class User {
         if(user) {
             const isValid = await bcrypt.compare(credentials.password, user.password);
             if(isValid) {
-                return user
+                return this.makePublicUser(user);
             }
         }
 
@@ -34,7 +45,7 @@ class User {
     static async register(credentials) {
         // user should submit email, password, and (other data)
         // if any fields are missing, throw an error
-        const requiredFields = ['email', 'password', 'first_name', 'last_name', 'location'];
+        const requiredFields = ['email', 'password', 'firstName', 'lastName', 'location'];
         requiredFields.forEach(field => {
             if (!credentials.hasOwnProperty(field)) {
                 throw new BadRequestError(`Missing ${field} in request body!`)
@@ -65,16 +76,17 @@ class User {
                 password,
                 first_name,
                 last_name,
-                location
+                location,
+                date
             )
-            VALUES ($1,$2,$3,$4,$5)
-            RETURNING id, email, first_name, last_name, location;`,
-            [lowercasedEmail, hashedPassword, credentials.first_name, credentials.last_name, credentials.location])
+            VALUES ($1,$2,$3,$4,$5,$6)
+            RETURNING id, email, first_name, last_name, location, date;`,
+            [lowercasedEmail, hashedPassword, credentials.firstName, credentials.lastName, credentials.location, credentials.date]);
 
         //return user
         const user = result.rows[0];
         
-        return user
+        return this.makePublicUser(user);
     }
 
     static async fetchUserByEmail(email) {
